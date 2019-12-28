@@ -7,15 +7,15 @@
 * Just clock. Maybe alarm clock (in the future).
 * 7 segment LED display
 * Configuration thru http activated on demand
- - SSID, password
- - NTP server
- - time zone
+  - SSID, password
+  - NTP server
+  - time zone
 * Clock updates every hour or something like that
 
 * optional 
- - alarm function
- - alarm(s) set/unset thru http. Alarm activation/deactivation by pushbuttons
- - some kind, limited, interface by LED display/pushbuttons
+  - alarm function
+  - alarm(s) set/unset thru http. Alarm activation/deactivation by pushbuttons
+  - some kind, limited, interface by LED display/pushbuttons
 
 ### Implementation
 
