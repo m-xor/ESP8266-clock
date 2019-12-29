@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NTP Clock Configuration</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
+<meta http-equiv="content-style-type" content="text/css">
+<meta http-equiv="expires" content="0">
+<link rel="shortcut icon" type="image/png" href="favicon.png">
+<link href="clock.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="clock.js"></script>
+</head>
+<body onload="get_data('all');beginTimeout();">
+<h1>Clock Configuration Page</h1>
+<p>Current time:<span id="currentTime"></span>Last updated:<span id="lastUpd"></span>Timeout:<span id="tout"></span></p>
+<p id="msg"></p>
+<h2>Connection</h2>
+<div>
+<p class="data_line">
+<span class="label">SSID:</span>
+<span class="data_field"><input type="text" name="ssid" id="ssid"></input></span>
+<button id="scan_btn" onclick="getList();resetTimeout()">Scan</button>
+</p>
+<p class="data_line">
+<span class="label">Password:</span>
+<span class="data_field"><input type="text" name="pwd" id="pwd" disabled></input></span>
+</p>
+<p class="button_line">
+<button id="cancel_btn" onclick="get_data('ap');resetTimeout()">Cancel</button>
+<button id="apply_bth" onclick="set_data('ap');resetTimeout()">Apply</button>
+</p>
+</div>
+<h2>NTP Server</h2>
+<div id="ntp_cont">
+<p class="data_line">
+<span calss="label">URL:</span>
+<span class="data_field"><input =type="text" name="ntp_serv" id="ntp_serv"></input></span>
+<p class="button_line"><button id="cancel_button" onclick="get_data('ntp');resetTimeout()">Cancel</button>
+<button id="cancel_button" onclick="set_data('ntp');resetTimeout()">Apply</button>
+</p>
+</p>
+</div>
+</body>
+</html>

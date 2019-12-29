@@ -22,3 +22,8 @@
 * SDK IDF 
 * WiFi, httpd, sntp - according to IDF [WiFi programming model](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/wifi.html) (blocking mode, events send to application, application calls API functions) 
 * application in RTC, non blocking model [QPC framework](https://www.state-machine.com/qpc/freertos.html)
+
+## Details
+
+### Directory schema
+* html : web config pages, to be integrated into main code as ROM filesystem
