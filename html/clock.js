@@ -2,7 +2,7 @@ function set_data(dataset) {
 	
 	var Request = new XMLHttpRequest();
 	
-	Request.open('POST', 'data.json', 1);
+	Request.open('POST', 'clock.json', 1);
 	Request.setRequestHeader("Action","set");
 	Request.setRequestHeader("DataSet",dataset);
 
@@ -40,7 +40,7 @@ function get_data(dataset) {
 	var Request = new XMLHttpRequest();
 
 	
-	Request.open('POST', 'data.json', 1);
+	Request.open('POST', 'clock.json', 1);
 	Request.setRequestHeader("Action","get");
 	Request.setRequestHeader("DataSet", dataset);
 	
@@ -61,7 +61,7 @@ function get_data(dataset) {
 
 function populate_data(Data) {
 	   		
-   			console.log(Data);
+ //  			console.log(Data);
    			if (typeof Data.Config.ssid !== 'undefined') {
    				document.getElementById("ssid").value = Data.Config.ssid; 
    			}
@@ -81,7 +81,10 @@ function populate_data(Data) {
    			if (typeof Data.Info.msg !== 'undefined') {
 	   			document.getElementById("msg").innerHTML = Data.Info.msg;
    			}
-
+   			if (typeof Data.Info.timeout !== 'undefined') {
+	   			document.getElementById("tout").innerHTML = Data.Info.timeout;
+	   			currentTimeout = Data.Info.timeout;
+   			}
 }
 
 function getList() {
@@ -90,20 +93,97 @@ function getList() {
 
 var initialTimeout = 100;
 var currentTimeout;
+var myTimer;
 
 function beginTimeout() {
 	currentTimeout = initialTimeout;
-	window.setInterval(printTimeout,1000);
+	myTimer = window.setInterval(printTimeout,1000);
 }
 
-function resetTimeout() {
-	currentTimeout = initialTimeout;
-}
  
 function printTimeout() {
-	document.getElementById("tout").innerHTML = currentTimeout;	
-	if(currentTimeout==0)
-		location.replace("close.html");
+
+	if(currentTimeout>=0)
+	{
+		document.getElementById("tout").innerHTML = currentTimeout;
+	}			
+	else if(currentTimeout<=-10)
+	{
+		document.getElementById("msg").innerHTML = "Time's up";
+		window.clearInterval(myTimer);
+	}
+		
 	currentTimeout--;
 	
 }
+
+
+// When the user clicks on the button, open the modal
+function scanBtn(dataset) {
+  //zapytanie o AP
+  	var Request = new XMLHttpRequest();
+
+	
+	Request.open('POST', 'clock.json', 1);
+	Request.setRequestHeader("Action","get");
+	Request.setRequestHeader("DataSet", dataset);
+	
+	Request.onreadystatechange = function (aEvt) {
+		if (Request.readyState == 4) {
+   		if(Request.status == 200)
+   		{
+   			var Data = JSON.parse(Request.responseText);
+   			populate_data(Data);	//possible error messages
+   			if (typeof Data.APs !== 'undefined') {
+   				populate_list(Data);	//
+   				document.getElementById("mId").style.display = "block";	
+   			}
+   		}
+     		else
+	     		document.getElementById("msg").innerHTML = "Can't fetch AP list"; 
+
+		}
+	};	
+	Request.send(null);
+
+}
+
+function populate_list(Data) {
+	
+	var listCont = document.getElementById("mContent");
+	listCont.innerHTML = "";
+	for(i in Data.APs) {
+		listCont.innerHTML += "<div class='mItem' onclick='mChosenEvt()'>"+
+			"<span class='mMAC'>" + Data.APs[i].MAC + "</span>" +
+			"<span class='mSSID'>" + Data.APs[i].SSID + "</span>" +
+			"<span class='mAuth'>" + Data.APs[i].Auth + "</span>" +
+			"<span class='mCh'>" + Data.APs[i].Ch + "</span>" +
+			"<span class='mRSSI'>" + Data.APs[i].RSSI + "</span>" +
+			"<span class='mPhy'>" + Data.APs[i].Phy + "</span>" +
+			"</div>";
+	}
+}
+
+function mCloseEvt(e) {
+  document.getElementById("mId").style.display = "none";
+}
+
+function mChosenEvt() {
+
+	for(i in event.currentTarget.childNodes)
+	{
+		if(event.currentTarget.childNodes[i].className == "mSSID")
+		{
+			document.getElementById("ssid").value 
+				= event.currentTarget.childNodes[i].innerHTML;
+		}
+		if(event.currentTarget.childNodes[i].className == "mAuth")
+		{
+			document.getElementById("pwd").disabled 
+				= event.currentTarget.childNodes[i].innerHTML == "N"; 
+
+		}	
+	}
+
+}
+

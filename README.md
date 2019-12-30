@@ -15,7 +15,7 @@
 * optional 
   - alarm function
   - alarm(s) set/unset thru http. Alarm activation/deactivation by pushbuttons
-  - some kind, limited, interface by LED display/pushbuttons
+  - kind of, limited, interface thru LED display/pushbuttons
 
 ### Implementation
 
