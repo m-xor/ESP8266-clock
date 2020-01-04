@@ -11,6 +11,10 @@
 #include "fs.h"
 #include "app_json.h"
 #include "esp_system.h"
+#include "scan_ap.h"
+#include "freertos/FreeRTOS.h"
+//#include "freertos/task.h"
+#include "freertos/event_groups.h"
 
 
 /*
@@ -60,6 +64,9 @@ enum dataSet {
 	DATASET_CLOSE,
 	DATASET_INVALID
 };
+
+extern EventGroupHandle_t wifi_event_group;
+extern const int WIFI_SCAN_DONE;
 
 static const char *TAG = "HTTPD";
 
@@ -135,6 +142,7 @@ static esp_err_t file_handler(httpd_req_t *req)
 		return ESP_FAIL;
 }
 
+
 static esp_err_t json_get_handler(httpd_req_t *req)
 {
 	char *buf;
@@ -181,36 +189,88 @@ static esp_err_t json_get_handler(httpd_req_t *req)
 		break;
 	case DATASET_APLST :
 		{
-			cJSON *array, *item;
-		array = cJSON_CreateArray();
-		cJSON_AddItemToObject(root, "APs", array);
-		//first AP
-		item = cJSON_CreateObject();
-		cJSON_AddItemToArray(array, item);
-			cJSON_AddItemToObject(item, "MAC", cJSON_CreateString("00:11:22:33:44:55:66"));
-			cJSON_AddItemToObject(item, "SSID", cJSON_CreateString("Fiu Fiu Fiu"));
-			cJSON_AddItemToObject(item, "Auth", cJSON_CreateString("T"));
-			cJSON_AddItemToObject(item, "Ch", cJSON_CreateNumber(1));
-			cJSON_AddItemToObject(item, "RSSI", cJSON_CreateNumber(-20));
-			cJSON_AddItemToObject(item, "Phy", cJSON_CreateString("b/g/n"));
-		//second
-			item = cJSON_CreateObject();
-			cJSON_AddItemToArray(array, item);
-					cJSON_AddItemToObject(item, "MAC", cJSON_CreateString("66:55:44:33:33:22:11"));
-					cJSON_AddItemToObject(item, "SSID", cJSON_CreateString("TraLaLa"));
-					cJSON_AddItemToObject(item, "Auth", cJSON_CreateString("N"));
-					cJSON_AddItemToObject(item, "Ch", cJSON_CreateString("4"));
-					cJSON_AddItemToObject(item, "RSSI", cJSON_CreateString("-30"));
-					cJSON_AddItemToObject(item, "Phy", cJSON_CreateString("b/g"));
-					//third
-							item = cJSON_CreateObject();
-							cJSON_AddItemToArray(array, item);
-									cJSON_AddItemToObject(item, "MAC", cJSON_CreateString("00:11:44:33:33:11:00"));
-									cJSON_AddItemToObject(item, "SSID", cJSON_CreateString("Bum Cyk Cyk"));
-									cJSON_AddItemToObject(item, "Auth", cJSON_CreateString("T"));
-									cJSON_AddItemToObject(item, "Ch", cJSON_CreateString("5"));
-									cJSON_AddItemToObject(item, "RSSI", cJSON_CreateString("-30"));
-									cJSON_AddItemToObject(item, "Phy", cJSON_CreateString("b/g/n/WPS"));
+			esp_err_t err;
+
+    		if((err=initScanAp())==ESP_OK)
+    		{
+    			if(WIFI_SCAN_DONE==xEventGroupWaitBits(wifi_event_group,WIFI_SCAN_DONE,pdTRUE,pdFALSE,portMAX_DELAY))
+    			{
+
+				uint16_t num;
+				wifi_ap_record_t *list = getApLst(&num);
+
+				if(list)
+				{
+					for(uint16_t i = 0; i<num; i++)
+					{
+						ESP_LOGI(TAG, "%s:%d:%d:%d:%d:%d:%d:%d:%d",
+			//    					ap_found[i].bssid,
+								list[i].ssid,
+								list[i].primary,
+								list[i].second,
+								list[i].rssi,
+								list[i].authmode,
+								list[i].pairwise_cipher,
+								list[i].group_cipher,
+								list[i].ant,
+								list[i].wps);
+					}
+					free(list);
+				}
+    			}
+    			else
+    			{
+    				setItem(root, "Info", "msg", "Scannig Access Points timeout");
+    				//odpal task czyszczący zasoby zajęte przy skanowaniu
+    				//todo task czyszczący
+    			}
+
+
+			}
+    		else
+    		{
+    			ESP_LOGE(TAG,"init scan:%s", esp_err_to_name(err));
+    			/* scan initialization failed, inform client */
+    			setItem(root, "Info", "msg", "Scannig Access Points failed");
+    		}
+
+
+
+
+
+
+
+
+//			cJSON *array, *item;
+//		array = cJSON_CreateArray();
+//		cJSON_AddItemToObject(root, "APs", array);
+//		//first AP
+//		item = cJSON_CreateObject();
+//		cJSON_AddItemToArray(array, item);
+//			cJSON_AddItemToObject(item, "MAC", cJSON_CreateString("00:11:22:33:44:55:66"));
+//			cJSON_AddItemToObject(item, "SSID", cJSON_CreateString("Fiu Fiu Fiu"));
+//			cJSON_AddItemToObject(item, "Auth", cJSON_CreateString("T"));
+//			cJSON_AddItemToObject(item, "Ch", cJSON_CreateNumber(1));
+//			cJSON_AddItemToObject(item, "RSSI", cJSON_CreateNumber(-20));
+//			cJSON_AddItemToObject(item, "Phy", cJSON_CreateString("b/g/n"));
+//		//second
+//			item = cJSON_CreateObject();
+//			cJSON_AddItemToArray(array, item);
+//					cJSON_AddItemToObject(item, "MAC", cJSON_CreateString("66:55:44:33:33:22:11"));
+//					cJSON_AddItemToObject(item, "SSID", cJSON_CreateString("TraLaLa"));
+//					cJSON_AddItemToObject(item, "Auth", cJSON_CreateString("N"));
+//					cJSON_AddItemToObject(item, "Ch", cJSON_CreateString("4"));
+//					cJSON_AddItemToObject(item, "RSSI", cJSON_CreateString("-30"));
+//					cJSON_AddItemToObject(item, "Phy", cJSON_CreateString("b/g"));
+//					//third
+//							item = cJSON_CreateObject();
+//							cJSON_AddItemToArray(array, item);
+//									cJSON_AddItemToObject(item, "MAC", cJSON_CreateString("00:11:44:33:33:11:00"));
+//									cJSON_AddItemToObject(item, "SSID", cJSON_CreateString("Bum Cyk Cyk"));
+//									cJSON_AddItemToObject(item, "Auth", cJSON_CreateString("T"));
+//									cJSON_AddItemToObject(item, "Ch", cJSON_CreateString("5"));
+//									cJSON_AddItemToObject(item, "RSSI", cJSON_CreateString("-30"));
+//									cJSON_AddItemToObject(item, "Phy", cJSON_CreateString("b/g/n/WPS"));
 	}
 		break;
 	default:
@@ -264,6 +324,7 @@ static esp_err_t json_set_handler(httpd_req_t *req)
     	ESP_LOGE(TAG, "Can't allocate JSON object");
     	return ESP_FAIL;
     }
+
 
     if(dataSet != DATASET_CLOSE)
     	setItem(root, "Info", "timeout", CONFIG_AP_CONN_TIMEOUT);
@@ -412,4 +473,5 @@ void stop_webserver(httpd_handle_t server)
 {
     // Stop the httpd server
     httpd_stop(server);
+
 }

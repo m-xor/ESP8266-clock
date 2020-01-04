@@ -32,12 +32,13 @@
 #define EXAMPLE_MAX_STA_CONN       CONFIG_MAX_STA_CONN
 
 /* FreeRTOS event group to signal when we are connected*/
-static EventGroupHandle_t wifi_event_group;
+EventGroupHandle_t wifi_event_group;
 
 /* The event group allows multiple bits for each event,
    but we only care about one event - are we connected
    to the AP with an IP? */
 const int WIFI_CONNECTED_BIT = BIT0;
+const int WIFI_SCAN_DONE = BIT2;
 
 static const char *TAG = "MAIN";
 
@@ -52,7 +53,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     
     switch(event->event_id) {
     case SYSTEM_EVENT_STA_START:
-        esp_wifi_connect();
+//        esp_wifi_connect();
         break;
     case SYSTEM_EVENT_STA_GOT_IP:
         ESP_LOGI(TAG, "got ip:%s",
@@ -75,7 +76,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
             /*Switch to 802.11 bgn mode */
             esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCAL_11B | WIFI_PROTOCAL_11G | WIFI_PROTOCAL_11N);
         }
-        esp_wifi_connect();
+//        esp_wifi_connect();
         xEventGroupClearBits(wifi_event_group, WIFI_CONNECTED_BIT);
         break;
 
@@ -91,6 +92,12 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
             stop_webserver(*server);
             *server = NULL;
         }
+    	break;
+
+        // Unblocking scan ended (not caused by esp_wifi_connected())
+    case SYSTEM_EVENT_SCAN_DONE:
+    	ESP_LOGI(TAG, "SCAN DONE");
+    	xEventGroupSetBits(wifi_event_group, WIFI_SCAN_DONE);	//let display scanned APs
     	break;
 
     default:
@@ -116,12 +123,15 @@ void wifi_init_softap(void *arg)
             .max_connection = EXAMPLE_MAX_STA_CONN,
             .authmode = WIFI_AUTH_WPA_WPA2_PSK
         },
+//		.sta = {
+//				.ssid = ""
+//		}
     };
     if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0) {
         wifi_config.ap.authmode = WIFI_AUTH_OPEN;
     }
 
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
