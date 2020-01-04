@@ -3,14 +3,16 @@ function set_data(dataset) {
 	var Request = new XMLHttpRequest();
 	
 	Request.open('POST', 'clock.json', 1);
-	Request.setRequestHeader("Action","set");
 	Request.setRequestHeader("DataSet",dataset);
 
 	switch(dataset)
 	{
 	case 'ap':
 		Request.setRequestHeader("ssid",document.getElementById("ssid").value);
-		Request.setRequestHeader("pwd",document.getElementById("pwd").value);
+		if(document.getElementById("pwd").disabled == false)
+			Request.setRequestHeader("pwd",document.getElementById("pwd").value);
+		else 
+				Request.setRequestHeader("pwd","");
 		break;
 	case 'ntp' :
 		Request.setRequestHeader("ntp",document.getElementById("ntp_serv").value);
@@ -25,8 +27,13 @@ function set_data(dataset) {
    			var Data = JSON.parse(Request.responseText);
    			populate_data(Data);
    		}
+   		else if(Request.status == 408)	//timeout request
+   		{
+   			document.getElementsByTagName("BODY")[0].innerHTML = "The end";
+				window.clearInterval(myTimer);
+   		}
      		else
-	     		document.getElementById("msg").innerHTML = "Possible problem with setting configuration"; 
+	     		document.getElementById("msg").innerHTML = "Can't set config"; 
 
 		}
 	};	
@@ -38,10 +45,8 @@ function set_data(dataset) {
 function get_data(dataset) {
 
 	var Request = new XMLHttpRequest();
-
 	
-	Request.open('POST', 'clock.json', 1);
-	Request.setRequestHeader("Action","get");
+	Request.open('GET', 'clock.json', 1);
 	Request.setRequestHeader("DataSet", dataset);
 	
 	Request.onreadystatechange = function (aEvt) {
@@ -52,7 +57,7 @@ function get_data(dataset) {
    			populate_data(Data);
    		}
      		else
-	     		document.getElementById("msg").innerHTML = "Can't fetch config data"; 
+	     		document.getElementById("msg").innerHTML = "Can't fetch config"; 
 
 		}
 	};	
@@ -61,35 +66,49 @@ function get_data(dataset) {
 
 function populate_data(Data) {
 	   		
- //  			console.log(Data);
-   			if (typeof Data.Config.ssid !== 'undefined') {
-   				document.getElementById("ssid").value = Data.Config.ssid; 
+	   		if( typeof Data.Config !== 'undefined')
+	   		{
+   				if (typeof Data.Config.ssid !== 'undefined') {
+   					document.getElementById("ssid").value = Data.Config.ssid;
+   					document.getElementById("pwd").value = ""; 
+   				}
+   				if (typeof Data.Config.ntp !== 'undefined') {
+   					document.getElementById("ntp_serv").value = Data.Config.ntp; 
+   				}
+   				if (typeof Data.Config.auth !== 'undefined') {
+	   				document.getElementById("pwd").disabled = Data.Config.auth==='false';
+   				}
    			}
-   			if (typeof Data.Config.ntp !== 'undefined') {
-   				document.getElementById("ntp_serv").value = Data.Config.ntp; 
+   			if( typeof Data.Info !== 'undefined' )
+   			{
+   				if (typeof Data.Info.currentTime !== 'undefined') {
+	   				document.getElementById("currentTime").innerHTML = Data.Info.currentTime;
+   				}
+   				if (typeof Data.Info.lastUpd !== 'undefined') {
+	   				document.getElementById("lastUpd").innerHTML = Data.Info.lastUpd;
+   				}
+   				if (typeof Data.Info.msg !== 'undefined') {
+	   				document.getElementById("msg").innerHTML = Data.Info.msg;
+   				}
+   				else {
+	   				document.getElementById("msg").innerHTML = "";   				
+   				}	
+   				if (typeof Data.Info.timeout !== 'undefined') {
+	   				document.getElementById("tout").innerHTML = Data.Info.timeout;
+	   				currentTimeout = Data.Info.timeout;
+   				}
+   				if (typeof Data.Info.sdkVer !== 'undefined') {
+	   				document.getElementById("sdkVer").innerHTML = Data.Info.sdkVer;
+   				}
+   				if (typeof Data.Info.compDate !== 'undefined') {
+	   				document.getElementById("compDate").innerHTML = Data.Info.compDate;
+   				}
    			}
-   			if (typeof Data.Config.auth !== 'undefined') {
-	   			document.getElementById("pwd").disabled = Data.Config.auth==='false';
-   			}
-   			
-   			if (typeof Data.Info.currentTime !== 'undefined') {
-	   			document.getElementById("currentTime").innerHTML = Data.Info.currentTime;
-   			}
-   			if (typeof Data.Info.lastUpd !== 'undefined') {
-	   			document.getElementById("lastUpd").innerHTML = Data.Info.lastUpd;
-   			}
-   			if (typeof Data.Info.msg !== 'undefined') {
-	   			document.getElementById("msg").innerHTML = Data.Info.msg;
-   			}
-   			if (typeof Data.Info.timeout !== 'undefined') {
-	   			document.getElementById("tout").innerHTML = Data.Info.timeout;
-	   			currentTimeout = Data.Info.timeout;
+   			else {
+   				document.getElementById("msg").innerHTML = "";
    			}
 }
 
-function getList() {
-	document.getElementById("msg").innerHTML = "to be done";
-}
 
 var initialTimeout = 100;
 var currentTimeout;
@@ -107,9 +126,9 @@ function printTimeout() {
 	{
 		document.getElementById("tout").innerHTML = currentTimeout;
 	}			
-	else if(currentTimeout<=-10)
+	else //if(currentTimeout<=-10)
 	{
-		document.getElementById("msg").innerHTML = "Time's up";
+		document.getElementsByTagName("BODY")[0].innerHTML = "Timeout. Connection closed";
 		window.clearInterval(myTimer);
 	}
 		
@@ -117,15 +136,12 @@ function printTimeout() {
 	
 }
 
-
-// When the user clicks on the button, open the modal
+// ---- Modal ------
 function scanBtn(dataset) {
-  //zapytanie o AP
+
   	var Request = new XMLHttpRequest();
 
-	
-	Request.open('POST', 'clock.json', 1);
-	Request.setRequestHeader("Action","get");
+	Request.open('GET', 'clock.json', 1);
 	Request.setRequestHeader("DataSet", dataset);
 	
 	Request.onreadystatechange = function (aEvt) {
@@ -135,7 +151,7 @@ function scanBtn(dataset) {
    			var Data = JSON.parse(Request.responseText);
    			populate_data(Data);	//possible error messages
    			if (typeof Data.APs !== 'undefined') {
-   				populate_list(Data);	//
+   				populate_list(Data);	
    				document.getElementById("mId").style.display = "block";	
    			}
    		}
@@ -179,6 +195,7 @@ function mChosenEvt() {
 		}
 		if(event.currentTarget.childNodes[i].className == "mAuth")
 		{
+			document.getElementById("pwd").value = "";
 			document.getElementById("pwd").disabled 
 				= event.currentTarget.childNodes[i].innerHTML == "N"; 
 

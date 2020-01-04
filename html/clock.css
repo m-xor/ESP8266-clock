@@ -21,6 +21,10 @@ body {
 	padding-left: 9.5ch;
 }
 
+.closeBtn {
+	padding-top: 2em;
+}
+
 .mClass {
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */

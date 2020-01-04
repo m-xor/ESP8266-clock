@@ -10,10 +10,10 @@
 <link href="clock.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="clock.js"></script>
 </head>
-<body onload="get_data('all');beginTimeout();">
+<body onload="get_data('all');beginTimeout();" onunload="set_data('close')">
 <h1>Clock Configuration Page</h1>
-<p>Current time:<span id="currentTime" class="dateTime">N/A</span>Last updated:<span id="lastUpd" class="dateTime">N/A</span>Timeout:<span id="tout" class="dateTime"></span></p>
-<p id="msg"></p>
+<div>Current time:<span id="currentTime" class="dateTime">N/A</span>Last updated:<span id="lastUpd" class="dateTime">N/A</span>Timeout:<span id="tout" class="dateTime"></span></div>
+<div id="msg"></div>
 <h2>Connection</h2>
 <div id="mId" class="mClass" onclick="mCloseEvt()">
 <div class="mContainer">
@@ -25,29 +25,33 @@
 </div>
 </div>
 <div>
-<p class="data_line">
+<div class="data_line">
 <span class="label">SSID:</span>
 <span class="data_field"><input type="text" name="ssid" id="ssid"></input></span>
 <button id="scan_btn" onclick="scanBtn('apLst')">Scan</button>
-</p>
-<p class="data_line">
+</div>
+<div class="data_line">
 <span class="label">Password:</span>
 <span class="data_field"><input type="text" name="pwd" id="pwd"></input></span>
-</p>
-<p class="button_line">
-<button id="cancel_btn" onclick="get_data('ap')">Cancel</button>
-<button id="apply_bth" onclick="set_data('ap')">Apply</button>
-</p>
+</div>
+<div class="button_line">
+<button onclick="get_data('ap')">Cancel</button>
+<button onclick="set_data('ap')">Apply</button>
+</div>
 </div>
 <h2>NTP Server</h2>
 <div id="ntp_cont">
-<p class="data_line">
+<div class="data_line">
 <span class="label">URL:</span>
-<span class="data_field"><input =type="text" name="ntp_serv" id="ntp_serv"></input></span>
-<p class="button_line"><button id="cancel_button" onclick="get_data('ntp')">Cancel</button>
-<button id="cancel_button" onclick="set_data('ntp')">Apply</button>
-</p>
-</p>
+<span class="data_field"><input =type="text" id="ntp_serv"></input></span>
 </div>
+<div class="button_line"><button onclick="get_data('ntp')">Cancel</button>
+<button onclick="set_data('ntp')">Apply</button>
+</div>
+</div>
+<div class="closeBtn"><button onclick="set_data('close')">Close session</button></div>
+<h2>Firmware</h2>
+<div>SDK ver.: <span id="sdkVer"></span></div>
+<div>Comp. date: <span id="compDate"></span></div>
 </body>
 </html>

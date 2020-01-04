@@ -1,0 +1,37 @@
+menu "NTP Clock Project Configuration"
+
+menu "Pin Assigning"
+config PRJ_BUTTON
+    int "Btn pin nr"
+    default 4
+    help
+	Number of pin assigning to button activating AP+Httpd.
+endmenu
+
+
+config ESP_WIFI_SSID
+    string "WiFi SSID"
+    default "ClockConfig"
+    help
+	SSID for soft AP to connect.
+
+config ESP_WIFI_PASSWORD
+    string "WiFi Password"
+    default "esp clock config page"
+    help
+	WiFi password for soft AP.
+		
+config MAX_STA_CONN
+    int "Max STA conn"
+    default 2
+    help
+	Max number of the STA connects to soft AP.
+
+config AP_CONN_TIMEOUT
+    string "Httpd connection timeout in seconds"
+    default 60
+    help
+	Time httpd and AP would be deactivated since last transmission.
+endmenu
+
+

@@ -26,4 +26,5 @@
 ## Details
 
 ### Directory schema
-* html : web config pages, to be integrated into main code as ROM filesystem
+* project : project main directory in accordance with [ESP IDF project structure schema](https://docs.espressif.com/projects/esp8266-rtos-sdk/en/latest/get-started/index.html#start-a-project)
+* html : web config pages, to be integrated into main code as ROM filesystem (fsdata.h file)
