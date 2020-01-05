@@ -9,15 +9,7 @@
 #define MAIN_APP_JSON_H_
 
 #include "cJSON.h"
-
-struct arrItem {
-	char *mac;
-	char *ssid;
-	char auth;
-	int ch;
-	int rssi;
-	char *phy;
-};
+#include "esp_wifi_types.h"
 
 /*
  * Add ItemName of itemVal into objName object and attach it to root
@@ -32,6 +24,6 @@ void setItem(cJSON *root,
 
 void setArrayItem(cJSON *root,
 		char const * const arrName,
-		struct arrItem *item);
+		wifi_ap_record_t *items);
 
 #endif /* MAIN_APP_JSON_H_ */

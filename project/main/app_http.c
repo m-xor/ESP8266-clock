@@ -157,7 +157,6 @@ static esp_err_t json_get_handler(httpd_req_t *req)
 		dataSet = decDataSet(buf);
 		free(buf);
 	}
-//    ESP_LOGI(TAG, "DataSet:%d", dataSet);
 
 
     if(!(root = cJSON_CreateObject()))
@@ -174,8 +173,8 @@ static esp_err_t json_get_handler(httpd_req_t *req)
 		setItem(root, "Config", "ssid", "Gateway To NTP Server");
 		setItem(root, "Config", "auth", "true");
 		setItem(root, "Config", "ntp", "ntp.pool.org");
-		setItem(root, "Info", "currentTime", __TIME__);
-		setItem(root, "Info", "lastUpd", __TIME__);
+//		setItem(root, "Info", "currentTime", __TIME__);
+		setItem(root, "Info", "lastUpd", __DATE__ " " __TIME__);
 
 		setItem(root, "Info", "sdkVer", esp_get_idf_version());
 		setItem(root, "Info", "compDate", __DATE__ ", " __TIME__);
@@ -193,36 +192,26 @@ static esp_err_t json_get_handler(httpd_req_t *req)
 
     		if((err=initScanAp())==ESP_OK)
     		{
-    			if(WIFI_SCAN_DONE==xEventGroupWaitBits(wifi_event_group,WIFI_SCAN_DONE,pdTRUE,pdFALSE,portMAX_DELAY))
+    			//wait 30 sec for the list
+    			if(WIFI_SCAN_DONE==xEventGroupWaitBits(wifi_event_group,WIFI_SCAN_DONE,pdTRUE,pdFALSE,pdMS_TO_TICKS(30000)))
     			{
 
 				uint16_t num;
 				wifi_ap_record_t *list = getApLst(&num);
 
-				if(list)
-				{
-					for(uint16_t i = 0; i<num; i++)
+					if(list)
 					{
-						ESP_LOGI(TAG, "%s:%d:%d:%d:%d:%d:%d:%d:%d",
-			//    					ap_found[i].bssid,
-								list[i].ssid,
-								list[i].primary,
-								list[i].second,
-								list[i].rssi,
-								list[i].authmode,
-								list[i].pairwise_cipher,
-								list[i].group_cipher,
-								list[i].ant,
-								list[i].wps);
+						for(uint16_t i = 0; i<num; i++)
+						{
+							setArrayItem(root, "APs", &list[i]);
+						}
+						free(list);
 					}
-					free(list);
-				}
     			}
     			else
     			{
     				setItem(root, "Info", "msg", "Scannig Access Points timeout");
-    				//odpal task czyszczący zasoby zajęte przy skanowaniu
-    				//todo task czyszczący
+    				esp_wifi_scan_stop();	//Assume scan_stop function frees resources. Does it?
     			}
 
 
@@ -233,51 +222,12 @@ static esp_err_t json_get_handler(httpd_req_t *req)
     			/* scan initialization failed, inform client */
     			setItem(root, "Info", "msg", "Scannig Access Points failed");
     		}
-
-
-
-
-
-
-
-
-//			cJSON *array, *item;
-//		array = cJSON_CreateArray();
-//		cJSON_AddItemToObject(root, "APs", array);
-//		//first AP
-//		item = cJSON_CreateObject();
-//		cJSON_AddItemToArray(array, item);
-//			cJSON_AddItemToObject(item, "MAC", cJSON_CreateString("00:11:22:33:44:55:66"));
-//			cJSON_AddItemToObject(item, "SSID", cJSON_CreateString("Fiu Fiu Fiu"));
-//			cJSON_AddItemToObject(item, "Auth", cJSON_CreateString("T"));
-//			cJSON_AddItemToObject(item, "Ch", cJSON_CreateNumber(1));
-//			cJSON_AddItemToObject(item, "RSSI", cJSON_CreateNumber(-20));
-//			cJSON_AddItemToObject(item, "Phy", cJSON_CreateString("b/g/n"));
-//		//second
-//			item = cJSON_CreateObject();
-//			cJSON_AddItemToArray(array, item);
-//					cJSON_AddItemToObject(item, "MAC", cJSON_CreateString("66:55:44:33:33:22:11"));
-//					cJSON_AddItemToObject(item, "SSID", cJSON_CreateString("TraLaLa"));
-//					cJSON_AddItemToObject(item, "Auth", cJSON_CreateString("N"));
-//					cJSON_AddItemToObject(item, "Ch", cJSON_CreateString("4"));
-//					cJSON_AddItemToObject(item, "RSSI", cJSON_CreateString("-30"));
-//					cJSON_AddItemToObject(item, "Phy", cJSON_CreateString("b/g"));
-//					//third
-//							item = cJSON_CreateObject();
-//							cJSON_AddItemToArray(array, item);
-//									cJSON_AddItemToObject(item, "MAC", cJSON_CreateString("00:11:44:33:33:11:00"));
-//									cJSON_AddItemToObject(item, "SSID", cJSON_CreateString("Bum Cyk Cyk"));
-//									cJSON_AddItemToObject(item, "Auth", cJSON_CreateString("T"));
-//									cJSON_AddItemToObject(item, "Ch", cJSON_CreateString("5"));
-//									cJSON_AddItemToObject(item, "RSSI", cJSON_CreateString("-30"));
-//									cJSON_AddItemToObject(item, "Phy", cJSON_CreateString("b/g/n/WPS"));
 	}
 		break;
 	default:
 		setItem(root, "Info", "msg", "Error at parsing GET/DataSet header");
 		break;
 	}
-
 
 	   json_out = cJSON_Print(root);
 

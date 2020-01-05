@@ -25,7 +25,7 @@ esp_err_t initScanAp(void)
 	scanconf.show_hidden = true;
 	scanconf.scan_type = WIFI_SCAN_TYPE_ACTIVE;
 	scanconf.scan_time.active.min = 120;
-	scanconf.scan_time.active.min = 500;
+	scanconf.scan_time.active.min = 400;
 //    	scanconf.scan_type = WIFI_SCAN_TYPE_PASSIVE;
 //		scanconf.scan_time.passive = 1000;
 

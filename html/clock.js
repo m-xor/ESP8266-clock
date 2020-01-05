@@ -143,9 +143,14 @@ function scanBtn(dataset) {
 
 	Request.open('GET', 'clock.json', 1);
 	Request.setRequestHeader("DataSet", dataset);
+
+	//scanning takes time...	
+	document.getElementById("msg").innerHTML = "Wait..."; 
+	window.clearInterval(myTimer);
 	
 	Request.onreadystatechange = function (aEvt) {
 		if (Request.readyState == 4) {
+			myTimer = window.setInterval(printTimeout,1000);
    		if(Request.status == 200)
    		{
    			var Data = JSON.parse(Request.responseText);
