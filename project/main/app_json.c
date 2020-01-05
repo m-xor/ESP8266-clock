@@ -65,7 +65,7 @@ static char *getMAC(char * buf, uint8_t const bssid[6])
 
 	for(uint8_t i=0; i< 6 ; i++)
 	{
-		sprintf(&buf[j],"%x:",bssid[i]);
+		sprintf(&buf[j],"%.2X:",bssid[i]);
 		j += 3;
 	}
 	buf[--j] = '\0';
