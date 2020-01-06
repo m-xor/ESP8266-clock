@@ -20,6 +20,7 @@
 //#include "fs.h"
 #include "app_http.h"
 
+
 /* The examples use simple WiFi configuration that you can set via
    'make menuconfig'.
 
@@ -164,8 +165,11 @@ void wifi_init_sta()
              EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
 }
 
+
+
 void app_main()
 {
+
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
@@ -173,7 +177,7 @@ void app_main()
       ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
-    
+
 //#if EXAMPLE_ESP_WIFI_MODE_AP
     static httpd_handle_t server = NULL;
     ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
@@ -182,5 +186,6 @@ void app_main()
 //    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
 //    wifi_init_sta();
 //#endif /*EXAMPLE_ESP_WIFI_MODE_AP*/
+
 
 }

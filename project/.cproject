@@ -37,9 +37,13 @@
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/http_parser/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/esp_http_server/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/cjson/cJSON&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/port}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.911790458" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__ESP_FILE__=&quot;&quot;"/>
+									<listOptionValue builtIn="false" value="configSUPPORT_STATIC_ALLOCATION=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.977722629" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -59,9 +63,13 @@
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/http_parser/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/esp_http_server/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/cjson/cJSON&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/port}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/include}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.327357337" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__ESP_FILE__=&quot;&quot;"/>
+									<listOptionValue builtIn="false" value="configSUPPORT_STATIC_ALLOCATION=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.367915181" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -89,11 +97,17 @@
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/http_parser/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/esp_http_server/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/cjson/cJSON&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/port}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.986018776" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="components/qpc/qpc/examples|components/qpc/qpc/ports|components/qpc/qpc/3rd_party" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
