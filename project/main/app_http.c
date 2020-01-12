@@ -5,6 +5,7 @@
  *      Author: slawek
  */
 
+#include <string.h>
 #include "app_http.h"
 #include "esp_err.h"
 #include "esp_log.h"
@@ -15,7 +16,10 @@
 #include "freertos/FreeRTOS.h"
 //#include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "store_config.h"
+#include "buildstamp.h"
 
+#define MAXDATE 30
 
 /*
  * Action : set
@@ -66,6 +70,8 @@ enum dataSet {
 };
 
 extern EventGroupHandle_t wifi_event_group;
+extern const int WIFI_CONNECTED_BIT;
+extern const int WIFI_NOT_CONNECTED_BIT;
 extern const int WIFI_SCAN_DONE;
 
 static const char *TAG = "HTTPD";
@@ -170,21 +176,22 @@ static esp_err_t json_get_handler(httpd_req_t *req)
 	switch(dataSet)
 	{
 	case DATASET_ALL :
-		setItem(root, "Config", "ssid", "Gateway To NTP Server");
-		setItem(root, "Config", "auth", "true");
-		setItem(root, "Config", "ntp", "ntp.pool.org");
-//		setItem(root, "Info", "currentTime", __TIME__);
-		setItem(root, "Info", "lastUpd", __DATE__ " " __TIME__);
-
+	{
+		char tmp[MAXDATE];
+		setItem(root, "Config", "ssid", getConfigValue(VAL_SSID));
+		setItem(root, "Config", "auth", getConfigValue(VAL_AUTH));
+		setItem(root, "Config", "ntp", getConfigValue(VAL_NTP));
+		setItem(root, "Info", "lastUpd", getLastUpdMsg(tmp));
 		setItem(root, "Info", "sdkVer", esp_get_idf_version());
-		setItem(root, "Info", "compDate", __DATE__ ", " __TIME__);
+		setItem(root, "Info", "compDate", BUILD_STAMP);
 		break;
+	}
 	case DATASET_AP :
-		setItem(root, "Config", "ssid", "Gateway To NTP Server");
-		setItem(root, "Config", "auth", "true");
+		setItem(root, "Config", "ssid", getConfigValue(VAL_SSID));
+		setItem(root, "Config", "auth", getConfigValue(VAL_AUTH));
 		break;
 	case DATASET_NTP :
-		setItem(root, "Config", "ntp", "ntp.pool.org");
+		setItem(root, "Config", "ntp", getConfigValue(VAL_NTP));
 		break;
 	case DATASET_APLST :
 		{
@@ -282,9 +289,14 @@ static esp_err_t json_set_handler(httpd_req_t *req)
 	switch(dataSet)
 	{
 	case DATASET_AP :
+	{
+		wifi_config_t conf;
+
 		if((buf = decHeader(req,"ssid")))
 		{
 			ESP_LOGI(TAG, "set SSID:%s", buf); // przypisz buf
+			setConfigValue(VAL_SSID, buf);
+			strcpy((char *)conf.sta.ssid,buf);
 			free(buf);
 		}
 		else
@@ -294,17 +306,42 @@ static esp_err_t json_set_handler(httpd_req_t *req)
 		if((buf = decHeader(req,"pwd")))
 		{
 			ESP_LOGI(TAG, "set PWD:%s", buf); //przypisz buf
+			setConfigValue(VAL_PWD, buf);
+			strcpy((char *)conf.sta.password,buf);
 			free(buf);
 		}
 		else
+		{
+			setConfigValue(VAL_SSID, "");
+			*conf.sta.password = 0;
 			ESP_LOGI(TAG, "PWD cleared"); //niezmieniony
+		}
+
+		//try connect waiting for queue
+		//decode possible error
+		//and compose a message
+		conf.sta.scan_method = WIFI_FAST_SCAN;
+		conf.sta.bssid_set = false;
+		*conf.sta.bssid = 0;
+		conf.sta.channel = 0;
+		conf.sta.listen_interval = 0;
+		conf.sta.sort_method = WIFI_CONNECT_AP_BY_SIGNAL;
+		conf.sta.threshold.rssi = -100;
+		conf.sta.threshold.authmode = WIFI_AUTH_OPEN;
+
+		esp_wifi_set_config(ESP_IF_WIFI_STA, &conf);
+		esp_wifi_connect();
+
+
 
 		setItem(root, "Info", "msg", "OK");
 
 		break;
+	}
 	case DATASET_NTP :
 		if((buf = decHeader(req,"ntp")))
 		{
+			setConfigValue(VAL_NTP, buf);
 			ESP_LOGI(TAG, "set NTP:%s", buf);
 			free(buf);
 		}

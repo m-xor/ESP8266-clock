@@ -39,12 +39,13 @@ EventGroupHandle_t wifi_event_group;
    but we only care about one event - are we connected
    to the AP with an IP? */
 const int WIFI_CONNECTED_BIT = BIT0;
+const int WIFI_NOT_CONNECTED_BIT = BIT1;
 const int WIFI_SCAN_DONE = BIT2;
 
 static const char *TAG = "MAIN";
 
 
-
+//todo: separate event handler for AP+sta and sole STA mode
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
 	httpd_handle_t *server = (httpd_handle_t *) ctx;
@@ -71,14 +72,27 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
                  MAC2STR(event->event_info.sta_disconnected.mac),
                  event->event_info.sta_disconnected.aid);
         break;
+
+    case SYSTEM_EVENT_STA_CONNECTED:
+    	/* We succeeded to try connecting choosen AP */
+        xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
+        ESP_LOGI(TAG, "Connection accepted");
+        esp_wifi_disconnect();
+    	break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
+    	/* We didn't succeed to try connecting choosen AP */
+    	//send reason to http server
+        ESP_LOGI(TAG, "Connection not accepted or disconnection");
+        xEventGroupSetBits(wifi_event_group, WIFI_NOT_CONNECTED_BIT);
+
         ESP_LOGE(TAG, "Disconnect reason : %d", info->disconnected.reason);
         if (info->disconnected.reason == WIFI_REASON_BASIC_RATE_NOT_SUPPORT) {
             /*Switch to 802.11 bgn mode */
             esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCAL_11B | WIFI_PROTOCAL_11G | WIFI_PROTOCAL_11N);
         }
-//        esp_wifi_connect();
-        xEventGroupClearBits(wifi_event_group, WIFI_CONNECTED_BIT);
+////        esp_wifi_connect();
+//        xEventGroupClearBits(wifi_event_group, WIFI_CONNECTED_BIT);
+
         break;
 
     case SYSTEM_EVENT_AP_START :
