@@ -6,6 +6,7 @@
  */
 
 #include  "app_json.h"
+#include <string.h>
 
 static char *getMAC(char * buf, uint8_t const bssid[6]);
 static char *getPHY(char * buf, wifi_ap_record_t const *items);
@@ -54,9 +55,12 @@ void setArrayItem(cJSON *root,
 	cJSON_AddItemToObject(item, "MAC", cJSON_CreateString( getMAC(strbuf,items->bssid) ));
 	cJSON_AddItemToObject(item, "SSID", cJSON_CreateString((char*)items->ssid));
 	cJSON_AddItemToObject(item, "Auth", cJSON_CreateString(items->authmode?"T":"N"));
-	cJSON_AddItemToObject(item, "Ch", cJSON_CreateNumber(items->primary));
-	cJSON_AddItemToObject(item, "RSSI", cJSON_CreateNumber(items->rssi));
+	sprintf(strbuf,"%u",items->primary);
+	cJSON_AddItemToObject(item, "Ch", cJSON_CreateString(strbuf));
+	sprintf(strbuf,"%d",items->rssi);
+	cJSON_AddItemToObject(item, "RSSI", cJSON_CreateString(strbuf));
 	cJSON_AddItemToObject(item, "Phy", cJSON_CreateString(getPHY(strbuf,items)));
+
 }
 
 static char *getMAC(char * buf, uint8_t const bssid[6])

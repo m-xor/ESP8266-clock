@@ -21,6 +21,9 @@
 
 #define MAXDATE 30
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
 /*
  * Action : set
  * DataSet:	ap
@@ -63,6 +66,7 @@
 enum dataSet {
 	DATASET_ALL,
 	DATASET_AP,
+	DATASET_TRY,	//wypróbuj konfigurację AP
 	DATASET_NTP,
 	DATASET_APLST,
 	DATASET_CLOSE,
@@ -70,9 +74,11 @@ enum dataSet {
 };
 
 extern EventGroupHandle_t wifi_event_group;
-extern const int WIFI_CONNECTED_BIT;
-extern const int WIFI_NOT_CONNECTED_BIT;
+//extern const int WIFI_CONNECTED_BIT;
+//extern const int WIFI_NOT_CONNECTED_BIT;
 extern const int WIFI_SCAN_DONE;
+
+extern TimerHandle_t xHttpdExpire;
 
 static const char *TAG = "HTTPD";
 
@@ -120,6 +126,8 @@ static enum dataSet decDataSet(char *buf)
 //		result = DATASET_AP;
 //	else if(!strcmp("ntp",buf))
 //		result = DATASET_NTP;
+//	else if(!strcmp("apTry",buf))
+//		result = DATASET_TRY;
 	else if(!strcmp("close",buf))
 		result = DATASET_CLOSE;
 
@@ -135,6 +143,8 @@ static esp_err_t file_handler(httpd_req_t *req)
 	int len;
 	char const *type;
 	const char* resp_str = (const char*) req->user_ctx;
+
+	xTimerReset(xHttpdExpire,pdMS_TO_TICKS(50));
 
 	if( fs_get(resp_str,&data,&len))
 	{
@@ -157,6 +167,7 @@ static esp_err_t json_get_handler(httpd_req_t *req)
     char *json_out;
     esp_err_t result = ESP_OK;
 
+    xTimerReset(xHttpdExpire,pdMS_TO_TICKS(500));
 
     if((buf = decHeader(req,"DataSet")))
     {
@@ -171,7 +182,7 @@ static esp_err_t json_get_handler(httpd_req_t *req)
     	return ESP_FAIL;
     }
 
-   	setItem(root, "Info", "timeout", CONFIG_AP_CONN_TIMEOUT);
+   	setItem(root, "Info", "timeout", STR(CONFIG_AP_CONN_TIMEOUT));
 
 	switch(dataSet)
 	{
@@ -208,6 +219,7 @@ static esp_err_t json_get_handler(httpd_req_t *req)
 
 					if(list)
 					{
+						ESP_LOGI(TAG, "APLIST NUMER: %d", num);
 						for(uint16_t i = 0; i<num; i++)
 						{
 							setArrayItem(root, "APs", &list[i]);
@@ -237,12 +249,13 @@ static esp_err_t json_get_handler(httpd_req_t *req)
 	}
 
 	   json_out = cJSON_Print(root);
+//	   ESP_LOGI(TAG, "JSON: %s", json_out);
 
 	   /* free all objects under root and root itself */
 	   cJSON_Delete(root);
 
 
-		ESP_LOGI(TAG, "clock.json;");
+		//ESP_LOGI(TAG, "clock.json;");
 		result = httpd_resp_set_type(req, "application/json");
 		if(result != ESP_OK)
 			ESP_LOGE(TAG,"Json header error: %s", esp_err_to_name(result));
@@ -266,9 +279,11 @@ static esp_err_t json_set_handler(httpd_req_t *req)
     cJSON *root;
     char *json_out;
     esp_err_t result = ESP_OK;
+    const char * req_status = HTTPD_200;
 
+    xTimerReset(xHttpdExpire,pdMS_TO_TICKS(500));
 
-    if((buf = decHeader(req,"DataSet")))
+    if((buf = decHeader(req,"DataSet"))) //function allocates memory for buf
     {
 		dataSet = decDataSet(buf);
 		free(buf);
@@ -283,20 +298,18 @@ static esp_err_t json_set_handler(httpd_req_t *req)
     }
 
 
-    if(dataSet != DATASET_CLOSE)
-    	setItem(root, "Info", "timeout", CONFIG_AP_CONN_TIMEOUT);
+    setItem(root, "Info", "timeout", STR(CONFIG_AP_CONN_TIMEOUT));
 
 	switch(dataSet)
 	{
 	case DATASET_AP :
 	{
-		wifi_config_t conf;
+
 
 		if((buf = decHeader(req,"ssid")))
 		{
 			ESP_LOGI(TAG, "set SSID:%s", buf); // przypisz buf
 			setConfigValue(VAL_SSID, buf);
-			strcpy((char *)conf.sta.ssid,buf);
 			free(buf);
 		}
 		else
@@ -307,32 +320,13 @@ static esp_err_t json_set_handler(httpd_req_t *req)
 		{
 			ESP_LOGI(TAG, "set PWD:%s", buf); //przypisz buf
 			setConfigValue(VAL_PWD, buf);
-			strcpy((char *)conf.sta.password,buf);
 			free(buf);
 		}
 		else
 		{
 			setConfigValue(VAL_SSID, "");
-			*conf.sta.password = 0;
 			ESP_LOGI(TAG, "PWD cleared"); //niezmieniony
 		}
-
-		//try connect waiting for queue
-		//decode possible error
-		//and compose a message
-		conf.sta.scan_method = WIFI_FAST_SCAN;
-		conf.sta.bssid_set = false;
-		*conf.sta.bssid = 0;
-		conf.sta.channel = 0;
-		conf.sta.listen_interval = 0;
-		conf.sta.sort_method = WIFI_CONNECT_AP_BY_SIGNAL;
-		conf.sta.threshold.rssi = -100;
-		conf.sta.threshold.authmode = WIFI_AUTH_OPEN;
-
-		esp_wifi_set_config(ESP_IF_WIFI_STA, &conf);
-		esp_wifi_connect();
-
-
 
 		setItem(root, "Info", "msg", "OK");
 
@@ -352,7 +346,9 @@ static esp_err_t json_set_handler(httpd_req_t *req)
 
 		break;
 	case DATASET_CLOSE :
-		//signal to app CLOSE
+		req_status = HTTPD_408;
+		//let timer some time for complete request
+		xTimerChangePeriod(xHttpdExpire,pdMS_TO_TICKS(1000), pdMS_TO_TICKS(50));
 		break;
 	default:
 		setItem(root, "Info", "msg", "Error at parsing SET/DataSet header");
@@ -365,16 +361,16 @@ static esp_err_t json_set_handler(httpd_req_t *req)
 	   cJSON_Delete(root);
 
 
-		ESP_LOGI(TAG, "clock.json;");
+		//ESP_LOGI(TAG, "clock.json;");
 		result = httpd_resp_set_type(req, "application/json");
 		if(result != ESP_OK)
 			ESP_LOGE(TAG,"Json header error: %s", esp_err_to_name(result));
-		if(dataSet == DATASET_CLOSE)
-		{
-			result = httpd_resp_set_status(req, HTTPD_408);
+//		if(dataSet == DATASET_CLOSE)
+//		{
+			result = httpd_resp_set_status(req, req_status);
 			if(result != ESP_OK)
-				ESP_LOGE(TAG,"Json 408 status error: %s", esp_err_to_name(result));
-		}
+				ESP_LOGE(TAG,"Json resp status error: %s", esp_err_to_name(result));
+//		}
 		result = httpd_resp_send(req, (char const *)json_out, strlen(json_out));
 		if(result != ESP_OK)
 		{
@@ -460,5 +456,4 @@ void stop_webserver(httpd_handle_t server)
 {
     // Stop the httpd server
     httpd_stop(server);
-
 }

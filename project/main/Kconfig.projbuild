@@ -28,7 +28,7 @@ config MAX_STA_CONN
 	Max number of the STA connects to soft AP.
 
 config AP_CONN_TIMEOUT
-    string "Httpd connection timeout in seconds"
+    int "Httpd connection timeout in seconds"
     default 60
     help
 	Time httpd and AP would be deactivated since last transmission.

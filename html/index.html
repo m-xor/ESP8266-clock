@@ -12,7 +12,9 @@
 </head>
 <body onload="get_data('all');beginTimeout();" onunload="set_data('close')">
 <h1>Clock Configuration Page</h1>
-<div>Current time:<span id="currentTime" class="dateTime">N/A</span>Last updated:<span id="lastUpd" class="dateTime">N/A</span>Timeout:<span id="tout" class="dateTime"></span></div>
+<div class="closeBtn"><button onclick="set_data('close')">Close session</button></div>
+<div>Timeout:<span id="tout" class="dateTime"></span></div>
+<div>Last updated:<span id="lastUpd" class="dateTime">N/A</span></div>
 <div id="msg"></div>
 <h2>Connection</h2>
 <div id="mId" class="mClass" onclick="mCloseEvt()">
@@ -33,6 +35,7 @@
 <div class="data_line">
 <span class="label">Password:</span>
 <span class="data_field"><input type="text" name="pwd" id="pwd"></input></span>
+<!--button id="try_btn" onclick="set_data('apTry')">Try</button-->
 </div>
 <div class="button_line">
 <button onclick="get_data('ap')">Cancel</button>
@@ -49,7 +52,6 @@
 <button onclick="set_data('ntp')">Apply</button>
 </div>
 </div>
-<div class="closeBtn"><button onclick="set_data('close')">Close session</button></div>
 <h2>Firmware</h2>
 <div>SDK ver.: <span id="sdkVer"></span></div>
 <div>Comp. date: <span id="compDate"></span></div>

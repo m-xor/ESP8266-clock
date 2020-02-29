@@ -36,10 +36,10 @@
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/tcpip_adapter/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/http_parser/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/esp_http_server/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/cjson/cJSON&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/port}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/json/cJSON&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.911790458" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__ESP_FILE__=&quot;&quot;"/>
@@ -62,10 +62,10 @@
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/freertos/port/esp8266/include/freertos&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/http_parser/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/esp_http_server/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/cjson/cJSON&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/port}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/json/cJSON&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.327357337" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__ESP_FILE__=&quot;&quot;"/>
@@ -96,10 +96,10 @@
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/freertos/port/esp8266/include/freertos&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/http_parser/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/esp_http_server/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/cjson/cJSON&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/port}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/project/components/qpc/qpc/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${IDF_PATH}/components/json/cJSON&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.986018776" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>

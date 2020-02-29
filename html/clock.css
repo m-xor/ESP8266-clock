@@ -5,6 +5,8 @@ body {
 
 #msg {
 	color : blue;
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
 }
 
 .dateTime {
@@ -22,7 +24,7 @@ body {
 }
 
 .closeBtn {
-	padding-top: 2em;
+	padding-bottom: 1em;
 }
 
 .mClass {
