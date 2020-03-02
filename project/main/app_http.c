@@ -66,7 +66,6 @@
 enum dataSet {
 	DATASET_ALL,
 	DATASET_AP,
-	DATASET_TRY,	//wypróbuj konfigurację AP
 	DATASET_NTP,
 	DATASET_APLST,
 	DATASET_CLOSE,
@@ -126,8 +125,6 @@ static enum dataSet decDataSet(char *buf)
 //		result = DATASET_AP;
 //	else if(!strcmp("ntp",buf))
 //		result = DATASET_NTP;
-//	else if(!strcmp("apTry",buf))
-//		result = DATASET_TRY;
 	else if(!strcmp("close",buf))
 		result = DATASET_CLOSE;
 

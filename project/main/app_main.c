@@ -16,11 +16,13 @@
 #include "esp_event_loop.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
+#include "esp_system.h"
 
 #include <esp_http_server.h>
 //#include "fs.h"
 #include "app_http.h"
 #include "button.h"
+#include "display.h"
 
 
 /* The examples use simple WiFi configuration that you can set via
@@ -44,9 +46,25 @@ EventGroupHandle_t wifi_event_group;
 //const int WIFI_NOT_CONNECTED_BIT = BIT1;
 const int WIFI_SCAN_DONE = BIT2;
 
+
+//******test httpd task
+EventGroupHandle_t httpd_start_event;
+const int HTTPD_START = BIT0;
+//*************
+
 static const char *TAG = "MAIN";
 
 TimerHandle_t xHttpdExpire;
+
+
+static esp_err_t dummy_event_handler(void *ctx, system_event_t *event)
+{
+	(void)event;
+
+	ESP_LOGI(TAG, "dummy_event_handler: %d ", event->event_id);
+
+    return ESP_OK;
+}
 
 static void HttpdExpireCb(TimerHandle_t xTimer)
 {
@@ -56,6 +74,7 @@ static void HttpdExpireCb(TimerHandle_t xTimer)
 	esp_wifi_deinit();
 	vEventGroupDelete( wifi_event_group );
 	button_reg_isr(TAG);
+	(void)esp_event_loop_set_cb(dummy_event_handler, NULL);
 }
 
 //todo: separate event handler for AP+sta and sole STA mode
@@ -128,6 +147,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
         			ESP_LOGI(TAG, "Http Timer hasn't started!");
         	}
         }
+        display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_ON);
     	break;
     case SYSTEM_EVENT_AP_STOP :
         /* Stop the web server */
@@ -137,6 +157,9 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
             ESP_LOGI(TAG, "Httpd stopped");
         }
         xTimerDelete(xHttpdExpire,pdMS_TO_TICKS(CONFIG_AP_CONN_TIMEOUT));
+        xHttpdExpire = NULL;
+
+        display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_OFF);
     	break;
 
         // Unblocking scan ended (not caused by esp_wifi_connected())
@@ -156,8 +179,10 @@ void wifi_init_softap(void *arg)
 {
     wifi_event_group = xEventGroupCreate();
 
-    tcpip_adapter_init();
-    ESP_ERROR_CHECK(esp_event_loop_init(event_handler, arg));
+//    tcpip_adapter_init();
+//    ESP_ERROR_CHECK(esp_event_loop_init(event_handler, arg));
+
+    (void)esp_event_loop_set_cb(event_handler, arg);
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -212,10 +237,10 @@ void wifi_init_softap(void *arg)
 //}
 
 
-
 void app_main()
 {
 	button_init();
+	display_init();
 
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();
@@ -227,8 +252,27 @@ void app_main()
 
 //#if EXAMPLE_ESP_WIFI_MODE_AP
     static httpd_handle_t server = NULL;
-    ESP_LOGI(TAG, "ESP_WIFI_MODE_AP+STA");
-    wifi_init_softap(&server);
+
+    tcpip_adapter_init();
+    ESP_ERROR_CHECK(esp_event_loop_init(dummy_event_handler, NULL));
+
+
+    httpd_start_event = xEventGroupCreate();
+    for(;;)
+    {
+    	ESP_LOGI(TAG, "Heap watermark: %d", esp_get_minimum_free_heap_size());
+    	ESP_LOGI(TAG, "Heap: %d", esp_get_free_heap_size());
+		if(HTTPD_START==xEventGroupWaitBits(httpd_start_event,HTTPD_START,pdTRUE,pdFALSE,portMAX_DELAY))
+		{
+			ESP_LOGI(TAG, "ESP_WIFI_MODE_AP+STA");
+			wifi_init_softap(&server);
+		}
+		else
+		{
+			ESP_LOGI(TAG, "WTF?");
+		}
+    }
+
 //#else
 //    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
 //    wifi_init_sta();
