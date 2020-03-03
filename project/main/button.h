@@ -10,10 +10,11 @@
 
 #include "driver/gpio.h"
 
-#define BUTTON_PIN	GPIO_NUM_5
+//#define BUTTON_PIN	GPIO_NUM_5
+#define BUTTON_PIN	GPIO_NUM_0
 
 
 extern void button_init(void);
-extern void button_reg_isr(const char *tag);
+//extern void button_reg_isr(const char *tag);
 
 #endif /* MAIN_BUTTON_H_ */

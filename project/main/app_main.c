@@ -73,7 +73,7 @@ static void HttpdExpireCb(TimerHandle_t xTimer)
 	esp_wifi_stop();
 	esp_wifi_deinit();
 	vEventGroupDelete( wifi_event_group );
-	button_reg_isr(TAG);
+//	button_reg_isr(TAG);
 	(void)esp_event_loop_set_cb(dummy_event_handler, NULL);
 }
 
@@ -261,11 +261,12 @@ void app_main()
     for(;;)
     {
     	ESP_LOGI(TAG, "Heap watermark: %d", esp_get_minimum_free_heap_size());
-    	ESP_LOGI(TAG, "Heap: %d", esp_get_free_heap_size());
 		if(HTTPD_START==xEventGroupWaitBits(httpd_start_event,HTTPD_START,pdTRUE,pdFALSE,portMAX_DELAY))
 		{
+			ESP_LOGI(TAG, "Heap w/o AP: %d", esp_get_free_heap_size());
 			ESP_LOGI(TAG, "ESP_WIFI_MODE_AP+STA");
 			wifi_init_softap(&server);
+			ESP_LOGI(TAG, "Heap with AP: %d", esp_get_free_heap_size());
 		}
 		else
 		{
