@@ -5,13 +5,21 @@
  <package name="Events" stereotype="0x01">
   <class name="MyEvt" superclass="qpc::QEvt">
    <documentation>/* example event object */</documentation>
+   <attribute name="attr1" type="uint8_t" visibility="0x00" properties="0x00"/>
   </class>
   <class name="Class1" superclass="qpc::QEvt">
    <documentation>/* second example */</documentation>
+   <attribute name="attr1" type="uint16_t" visibility="0x00" properties="0x00"/>
   </class>
  </package>
  <package name="AOs" stereotype="0x02">
-  <class name="Clock" superclass="qpc::QHsm">
+  <class name="QTask" superclass="qpc::QHsm">
+   <documentation>/*Task abstract class*/</documentation>
+   <attribute name="queue" type="void *" visibility="0x00" properties="0x00">
+    <documentation>/*Pointer to FreeRTOS task queue*/</documentation>
+   </attribute>
+  </class>
+  <class name="Clock" superclass="AOs::QTask">
    <documentation>/*Application */</documentation>
    <statechart>
     <initial target="../1">
@@ -49,11 +57,14 @@ display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_OFF);</exit>
   </class>
   <attribute name="theClock" type="QHsm * const" visibility="0x00" properties="0x00">
    <documentation>/*pointer to static instance of the Clock */</documentation>
-   <code>= &amp;l_clock.super;</code>
+   <code>= &amp;l_clock.super.super;</code>
   </attribute>
   <operation name="Clock_ctor" type="void" visibility="0x00" properties="0x00">
    <documentation>/*Clock constructor */</documentation>
-   <code>QHsm_ctor(&amp;l_clock.super, Q_STATE_CAST(&amp;Clock_initial));</code>
+   <parameter name="queue" type="void *"/>
+   <code>QHsm_ctor(&amp;l_clock.super.super, Q_STATE_CAST(&amp;Clock_initial));
+Q_ASSERT( queue != (void*)0 );
+l_clock.super.queue = queue;</code>
   </operation>
  </package>
  <directory name="../project/components/qpc/app">
@@ -69,7 +80,19 @@ enum ProjectSignals {
     MAX_SIG                     /* the last signal */
 };
 
+
 $declare(Events)
+
+/* to satisfy freeRTOS queue */
+typedef union  {
+    QEvt qevt;
+    MyEvt myevt;
+    Class1 class1evt;
+} ProjectEvents;
+
+/* abstract class ------------------- */
+$declare(AOs::QTask)
+/* ---------------------------------------- */
 
 $declare(AOs::theClock)
 

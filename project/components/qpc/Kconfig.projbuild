@@ -1,0 +1,17 @@
+menu "QPC config"
+#config USING_QS
+#	   bool "Use QSpy"
+#	   default "n"
+#	   help
+#	      Enable QSpy monitoring tool.
+#	
+#	      In order to make it work, you need to configure UART output.
+
+config QPC_TASK_STACK_SIZE
+    int "QPC state machine Task stack size"
+    range 1024 32768
+    default 2048
+    help
+        FreeRTOS minimal stack size causes stack overflow
+	
+endmenu

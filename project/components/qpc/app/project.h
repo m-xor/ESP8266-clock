@@ -27,6 +27,7 @@ enum ProjectSignals {
     MAX_SIG                     /* the last signal */
 };
 
+
 /*$declare${Events} ########################################################*/
 
 /* example event object */
@@ -34,6 +35,9 @@ enum ProjectSignals {
 typedef struct {
 /* protected: */
     QEvt super;
+
+/* public: */
+    uint8_t attr1;
 } MyEvt;
 
 /* second example */
@@ -41,8 +45,35 @@ typedef struct {
 typedef struct {
 /* protected: */
     QEvt super;
+
+/* public: */
+    uint16_t attr1;
 } Class1;
 /*$enddecl${Events} ########################################################*/
+
+/* to satisfy freeRTOS queue */
+typedef union  {
+    QEvt qevt;
+    MyEvt myevt;
+    Class1 class1evt;
+} ProjectEvents;
+
+/* abstract class ------------------- */
+/*$declare${AOs::QTask} ####################################################*/
+
+/*Task abstract class*/
+/*${AOs::QTask} ............................................................*/
+typedef struct {
+/* protected: */
+    QHsm super;
+
+/* public: */
+
+    /*Pointer to task queue*/
+    void * queue;
+} QTask;
+/*$enddecl${AOs::QTask} ####################################################*/
+/* ---------------------------------------- */
 
 /*$declare${AOs::theClock} #################################################*/
 
@@ -54,7 +85,7 @@ extern QHsm * const theClock;
 
 /*Clock constructor */
 /*${AOs::Clock_ctor} .......................................................*/
-void Clock_ctor(void);
+void Clock_ctor(void * queue);
 /*$enddecl${AOs::Clock_ctor} ###############################################*/
 
 /* declare other elements... */

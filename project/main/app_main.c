@@ -11,6 +11,7 @@
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 #include "freertos/timers.h"
+#include "freertos/queue.h"
 #include "rom/ets_sys.h"
 #include "esp_wifi.h"
 #include "esp_event_loop.h"
@@ -24,6 +25,12 @@
 #include "button.h"
 #include "display.h"
 
+#include "qep.h"
+#include "qassert.h"
+#include "project.h"
+#include "qtasks.h"
+
+Q_DEFINE_THIS_FILE
 
 /* The examples use simple WiFi configuration that you can set via
    'make menuconfig'.
@@ -75,6 +82,10 @@ static void HttpdExpireCb(TimerHandle_t xTimer)
 	vEventGroupDelete( wifi_event_group );
 //	button_reg_isr(TAG);
 	(void)esp_event_loop_set_cb(dummy_event_handler, NULL);
+
+	//generuj sygnał timeouta
+	QEvt e = {TIMEOUT_SIG, 0, 0};
+	POST_EVENT(theClock,&e);
 }
 
 //todo: separate event handler for AP+sta and sole STA mode
@@ -147,7 +158,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
         			ESP_LOGI(TAG, "Http Timer hasn't started!");
         	}
         }
-        display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_ON);
+//        display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_ON);
     	break;
     case SYSTEM_EVENT_AP_STOP :
         /* Stop the web server */
@@ -159,7 +170,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
         xTimerDelete(xHttpdExpire,pdMS_TO_TICKS(CONFIG_AP_CONN_TIMEOUT));
         xHttpdExpire = NULL;
 
-        display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_OFF);
+ //       display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_OFF);
     	break;
 
         // Unblocking scan ended (not caused by esp_wifi_connected())
@@ -179,8 +190,8 @@ void wifi_init_softap(void *arg)
 {
     wifi_event_group = xEventGroupCreate();
 
-//    tcpip_adapter_init();
-//    ESP_ERROR_CHECK(esp_event_loop_init(event_handler, arg));
+ //   tcpip_adapter_init();
+ //   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, arg));
 
     (void)esp_event_loop_set_cb(event_handler, arg);
 
@@ -256,8 +267,25 @@ void app_main()
     tcpip_adapter_init();
     ESP_ERROR_CHECK(esp_event_loop_init(dummy_event_handler, NULL));
 
+    //application tasks
+//    QueueHandle_t queue = xQueueCreate( 10, sizeof(ProjectEvents) );
+//    Q_ASSERT(queue!=NULL);
+//    Clock_ctor(queue);
+
+    Clock_ctor( xQueueCreate(10, sizeof(ProjectEvents)) );
+//    ESP_LOGI(TAG, "queue: %p", queue);
+    //start task
+    Q_ASSERT(pdPASS == xTaskCreate( qTaskFunction,
+    								"Clock task",
+									2048, //uint16_t usStackDepth,
+									theClock, //void *pvParameters,
+									3, //UBaseType_t uxPriority,
+									NULL )
+    		);
+
 
     httpd_start_event = xEventGroupCreate();
+    Q_ASSERT(httpd_start_event!=NULL);
     for(;;)
     {
     	ESP_LOGI(TAG, "Heap watermark: %d", esp_get_minimum_free_heap_size());

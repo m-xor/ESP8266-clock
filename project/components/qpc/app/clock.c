@@ -31,7 +31,7 @@ Q_DEFINE_THIS_FILE
 /*${AOs::Clock} ............................................................*/
 typedef struct {
 /* protected: */
-    QHsm super;
+    QTask super;
 } Clock;
 
 /* protected: */
@@ -57,15 +57,17 @@ static Clock l_clock;  /* the instance of the Clock State Machine */
 
 /*pointer to static instance of the Clock */
 /*${AOs::theClock} .........................................................*/
-QHsm * const theClock = &l_clock.super;
+QHsm * const theClock = &l_clock.super.super;
 /*$enddef${AOs::theClock} ##################################################*/
 
 /*$define${AOs::Clock_ctor} ################################################*/
 
 /*Clock constructor */
 /*${AOs::Clock_ctor} .......................................................*/
-void Clock_ctor(void) {
-    QHsm_ctor(&l_clock.super, Q_STATE_CAST(&Clock_initial));
+void Clock_ctor(void * queue) {
+    QHsm_ctor(&l_clock.super.super, Q_STATE_CAST(&Clock_initial));
+    Q_ASSERT( queue != (void*)0 );
+    l_clock.super.queue = queue;
 }
 /*$enddef${AOs::Clock_ctor} ################################################*/
 

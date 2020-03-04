@@ -15,6 +15,9 @@ extern EventGroupHandle_t httpd_start_event;
 extern const int HTTPD_START;
 //*************
 #include "freertos/timers.h"
+#include "qtasks.h"
+
+Q_DEFINE_THIS_FILE
 
 static const char *TAG = "BUTTON";
 
@@ -130,7 +133,12 @@ static void buttonCb( TimerHandle_t xTimer)
     if(State==0xf000)
     {
     	//debounced edge is detected
-    	xEventGroupSetBits(httpd_start_event,HTTPD_START); /* send signal */
+    	xEventGroupSetBits(httpd_start_event,HTTPD_START); /* send signal to httpd_start*/
+
+    	//generuj sygnał button
+    	//generuj sygnał timeouta
+    	QEvt e = {BUTTON_SIG, 0, 0};
+    	POST_EVENT(theClock,&e);
     }
 }
 
