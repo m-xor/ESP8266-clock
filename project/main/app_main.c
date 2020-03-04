@@ -39,9 +39,9 @@ Q_DEFINE_THIS_FILE
    the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
 */
 //#define EXAMPLE_ESP_WIFI_MODE_AP   CONFIG_ESP_WIFI_MODE_AP //TRUE:AP FALSE:STA
-#define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
-#define EXAMPLE_ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
-#define EXAMPLE_MAX_STA_CONN       CONFIG_MAX_STA_CONN
+//#define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
+//#define EXAMPLE_ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
+//#define EXAMPLE_MAX_STA_CONN       CONFIG_MAX_STA_CONN
 
 /* FreeRTOS event group to signal when we are connected*/
 EventGroupHandle_t wifi_event_group;
@@ -55,8 +55,8 @@ const int WIFI_SCAN_DONE = BIT2;
 
 
 //******test httpd task
-EventGroupHandle_t httpd_start_event;
-const int HTTPD_START = BIT0;
+//EventGroupHandle_t httpd_start_event;
+//const int HTTPD_START = BIT0;
 //*************
 
 static const char *TAG = "MAIN";
@@ -75,13 +75,13 @@ static esp_err_t dummy_event_handler(void *ctx, system_event_t *event)
 
 static void HttpdExpireCb(TimerHandle_t xTimer)
 {
-	esp_wifi_disconnect();
-	esp_wifi_deauth_sta(0);
-	esp_wifi_stop();
-	esp_wifi_deinit();
-	vEventGroupDelete( wifi_event_group );
-//	button_reg_isr(TAG);
-	(void)esp_event_loop_set_cb(dummy_event_handler, NULL);
+//	esp_wifi_disconnect();
+//	esp_wifi_deauth_sta(0);
+//	esp_wifi_stop();
+//	esp_wifi_deinit();
+//	vEventGroupDelete( wifi_event_group );
+////	button_reg_isr(TAG);
+//	(void)esp_event_loop_set_cb(dummy_event_handler, NULL);
 
 	//generuj sygnał timeouta
 	QEvt e = {TIMEOUT_SIG, 0, 0};
@@ -199,17 +199,17 @@ void wifi_init_softap(void *arg)
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     wifi_config_t wifi_config = {
         .ap = {
-            .ssid = EXAMPLE_ESP_WIFI_SSID,
-            .ssid_len = strlen(EXAMPLE_ESP_WIFI_SSID),
-            .password = EXAMPLE_ESP_WIFI_PASS,
-            .max_connection = EXAMPLE_MAX_STA_CONN,
+            .ssid = CONFIG_ESP_WIFI_SSID,
+            .ssid_len = strlen(CONFIG_ESP_WIFI_SSID),
+            .password = CONFIG_ESP_WIFI_PASSWORD,
+            .max_connection = CONFIG_MAX_STA_CONN,
             .authmode = WIFI_AUTH_WPA_WPA2_PSK
         },
 //		.sta = {
 //				.ssid = ""
 //		}
     };
-    if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0) {
+    if (strlen(CONFIG_ESP_WIFI_PASSWORD) == 0) {
         wifi_config.ap.authmode = WIFI_AUTH_OPEN;
     }
 
@@ -219,8 +219,9 @@ void wifi_init_softap(void *arg)
 
 
     ESP_LOGI(TAG, "wifi_init_softap finished.SSID:%s password:%s",
-             EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
+    		CONFIG_ESP_WIFI_SSID, CONFIG_ESP_WIFI_PASSWORD);
 }
+
 
 //void wifi_init_sta()
 //{
@@ -248,6 +249,24 @@ void wifi_init_softap(void *arg)
 //}
 
 
+void start_apsta(void)
+{
+	static httpd_handle_t server = NULL;
+
+	wifi_init_softap(&server);
+}
+
+void stop_apsta(void)
+{
+	esp_wifi_disconnect();
+	esp_wifi_deauth_sta(0);
+	esp_wifi_stop();
+	esp_wifi_deinit();
+	vEventGroupDelete( wifi_event_group );
+	(void)esp_event_loop_set_cb(dummy_event_handler, NULL);
+}
+
+
 void app_main()
 {
 	button_init();
@@ -262,7 +281,7 @@ void app_main()
     ESP_ERROR_CHECK(ret);
 
 //#if EXAMPLE_ESP_WIFI_MODE_AP
-    static httpd_handle_t server = NULL;
+    //static httpd_handle_t server = NULL;
 
     tcpip_adapter_init();
     ESP_ERROR_CHECK(esp_event_loop_init(dummy_event_handler, NULL));
@@ -275,32 +294,35 @@ void app_main()
     Clock_ctor( xQueueCreate(10, sizeof(ProjectEvents)) );
 //    ESP_LOGI(TAG, "queue: %p", queue);
     //start task
-    Q_ASSERT(pdPASS == xTaskCreate( qTaskFunction,
+    Q_ASSERT(pdPASS == xTaskCreate( qTaskFunction,	//generic QTask function for FreeRTOS
     								"Clock task",
-									2048, //uint16_t usStackDepth,
-									theClock, //void *pvParameters,
-									3, //UBaseType_t uxPriority,
+									CONFIG_QPC_TASK_STACK_SIZE,	//stack depth
+									theClock,	//pointer to QTask instance
+									3, 			//priority
 									NULL )
     		);
 
 
-    httpd_start_event = xEventGroupCreate();
-    Q_ASSERT(httpd_start_event!=NULL);
-    for(;;)
-    {
-    	ESP_LOGI(TAG, "Heap watermark: %d", esp_get_minimum_free_heap_size());
-		if(HTTPD_START==xEventGroupWaitBits(httpd_start_event,HTTPD_START,pdTRUE,pdFALSE,portMAX_DELAY))
-		{
-			ESP_LOGI(TAG, "Heap w/o AP: %d", esp_get_free_heap_size());
-			ESP_LOGI(TAG, "ESP_WIFI_MODE_AP+STA");
-			wifi_init_softap(&server);
-			ESP_LOGI(TAG, "Heap with AP: %d", esp_get_free_heap_size());
-		}
-		else
-		{
-			ESP_LOGI(TAG, "WTF?");
-		}
-    }
+
+
+
+//    httpd_start_event = xEventGroupCreate();
+//    Q_ASSERT(httpd_start_event!=NULL);
+//    for(;;)
+//    {
+//    	ESP_LOGI(TAG, "Heap watermark: %d", esp_get_minimum_free_heap_size());
+//		if(HTTPD_START==xEventGroupWaitBits(httpd_start_event,HTTPD_START,pdTRUE,pdFALSE,portMAX_DELAY))
+//		{
+//			ESP_LOGI(TAG, "Heap w/o AP: %d", esp_get_free_heap_size());
+//			ESP_LOGI(TAG, "ESP_WIFI_MODE_AP+STA");
+//			wifi_init_softap(&server);
+//			ESP_LOGI(TAG, "Heap with AP: %d", esp_get_free_heap_size());
+//		}
+//		else
+//		{
+//			ESP_LOGI(TAG, "WTF?");
+//		}
+//    }
 
 //#else
 //    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");

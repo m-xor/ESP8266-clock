@@ -10,9 +10,9 @@
 
 //******test httpd task
 #include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
-extern EventGroupHandle_t httpd_start_event;
-extern const int HTTPD_START;
+//#include "freertos/event_groups.h"
+//extern EventGroupHandle_t httpd_start_event;
+//extern const int HTTPD_START;
 //*************
 #include "freertos/timers.h"
 #include "qtasks.h"
@@ -133,7 +133,7 @@ static void buttonCb( TimerHandle_t xTimer)
     if(State==0xf000)
     {
     	//debounced edge is detected
-    	xEventGroupSetBits(httpd_start_event,HTTPD_START); /* send signal to httpd_start*/
+ //   	xEventGroupSetBits(httpd_start_event,HTTPD_START); /* send signal to httpd_start*/
 
     	//generuj sygnał button
     	//generuj sygnał timeouta

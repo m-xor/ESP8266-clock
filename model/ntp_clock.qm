@@ -38,9 +38,9 @@
     </state>
     <state name="configuration">
      <documentation>/* Clock configuration phase: httpd is active, wifi in AP+STA  mode */</documentation>
-     <entry>//start_ap();
+     <entry>start_apsta();
 display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_ON);</entry>
-     <exit>//stop_ap();
+     <exit>stop_apsta();
 display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_OFF);</exit>
      <tran trig="TIMEOUT" target="../../1">
       <tran_glyph conn="28,26,3,1,-9">
@@ -55,9 +55,9 @@ display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_OFF);</exit>
     <state_diagram size="80,50"/>
    </statechart>
   </class>
-  <attribute name="theClock" type="QHsm * const" visibility="0x00" properties="0x00">
+  <attribute name="theClock" type="QTask * const" visibility="0x00" properties="0x00">
    <documentation>/*pointer to static instance of the Clock */</documentation>
-   <code>= &amp;l_clock.super.super;</code>
+   <code>= &amp;l_clock.super;</code>
   </attribute>
   <operation name="Clock_ctor" type="void" visibility="0x00" properties="0x00">
    <documentation>/*Clock constructor */</documentation>
@@ -106,6 +106,7 @@ $declare(AOs::Clock_ctor)
    <text>#include &quot;qep_port.h&quot;
 #include &quot;qassert.h&quot;
 #include &quot;display.h&quot;
+#include  &quot;app_apsta.h&quot;
 #include &quot;project.h&quot;
 
 Q_DEFINE_THIS_FILE

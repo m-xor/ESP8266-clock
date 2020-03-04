@@ -15,7 +15,8 @@
 #include "project.h"
 
 
-#define POST_EVENT(task,e) do {Q_ASSERT(pdPASS==xQueueSendToBack( ((QTask*)task)->queue, e, 0));} while(0)
+//#define POST_EVENT(task,e) do {Q_ASSERT(pdPASS==xQueueSendToBack( ((QTask*)task)->queue, e, 0));} while(0)
+#define POST_EVENT(task,e) do {Q_ASSERT(pdPASS==xQueueSendToBack( (task)->queue, e, 0));} while(0)
 //extern void qTaskPostEvent(QTask *task, QEvt *e);
 extern void qTaskFunction(void *pvParameters);
 extern void Q_onAssert(char const *module, int loc);

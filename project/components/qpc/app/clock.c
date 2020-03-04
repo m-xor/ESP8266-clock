@@ -19,6 +19,7 @@
 #include "qep_port.h"
 #include "qassert.h"
 #include "display.h"
+#include  "app_apsta.h"
 #include "project.h"
 
 Q_DEFINE_THIS_FILE
@@ -57,7 +58,7 @@ static Clock l_clock;  /* the instance of the Clock State Machine */
 
 /*pointer to static instance of the Clock */
 /*${AOs::theClock} .........................................................*/
-QHsm * const theClock = &l_clock.super.super;
+QTask * const theClock = &l_clock.super;
 /*$enddef${AOs::theClock} ##################################################*/
 
 /*$define${AOs::Clock_ctor} ################################################*/
@@ -108,14 +109,14 @@ static QState Clock_configuration(Clock * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::Clock::SM::configuration} */
         case Q_ENTRY_SIG: {
-            //start_ap();
+            start_apsta();
             display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_ON);
             status_ = Q_HANDLED();
             break;
         }
         /*${AOs::Clock::SM::configuration} */
         case Q_EXIT_SIG: {
-            //stop_ap();
+            stop_apsta();
             display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_OFF);
             status_ = Q_HANDLED();
             break;

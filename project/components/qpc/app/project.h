@@ -69,7 +69,7 @@ typedef struct {
 
 /* public: */
 
-    /*Pointer to task queue*/
+    /*Pointer to FreeRTOS task queue*/
     void * queue;
 } QTask;
 /*$enddecl${AOs::QTask} ####################################################*/
@@ -78,7 +78,7 @@ typedef struct {
 /*$declare${AOs::theClock} #################################################*/
 
 /*pointer to static instance of the Clock */
-extern QHsm * const theClock;
+extern QTask * const theClock;
 /*$enddecl${AOs::theClock} #################################################*/
 
 /*$declare${AOs::Clock_ctor} ###############################################*/

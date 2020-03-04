@@ -23,12 +23,13 @@ void qTaskFunction(void *pvParameters) { /* FreeRTOS task signature */
 
     ESP_LOGI(TAG, "task started");
 
-	QHSM_INIT(&act->super, (QEvt *)0); /* trigger initial transition */
+//	QHSM_INIT(&act->super, (QEvt *)0); /* trigger initial transition */
+	QHSM_INIT(Q_HSM_UPCAST(act), (QEvt *)0); /* trigger initial transition */
 
-	ESP_LOGI(TAG, "qhsm initialized");
+//	ESP_LOGI(TAG, "qhsm initialized");
 
-	ESP_LOGI(TAG, "queue: %p", act->queue);
-	ESP_LOGI(TAG, "sizeof pvbuffer: %d", sizeof(ProjectEvents));
+//	ESP_LOGI(TAG, "queue: %p", act->queue);
+//	ESP_LOGI(TAG, "sizeof pvbuffer: %d", sizeof(ProjectEvents));
 
     /* event-loop */
     for (;;) { /* for-ever */
@@ -36,7 +37,8 @@ void qTaskFunction(void *pvParameters) { /* FreeRTOS task signature */
     					&pvBuffer,
 						portMAX_DELAY ); /* wait for ever */
     	ESP_LOGI(TAG, "event dispatched");
-        QHSM_DISPATCH(&act->super, e);
+//        QHSM_DISPATCH(&act->super, e);
+    	QHSM_DISPATCH(Q_HSM_UPCAST(act), e);
     }
 }
 
