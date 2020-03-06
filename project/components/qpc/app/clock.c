@@ -109,14 +109,14 @@ static QState Clock_configuration(Clock * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::Clock::SM::configuration} */
         case Q_ENTRY_SIG: {
-            start_apsta();
+            wifi_init_softap();
             display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_ON);
             status_ = Q_HANDLED();
             break;
         }
         /*${AOs::Clock::SM::configuration} */
         case Q_EXIT_SIG: {
-            stop_apsta();
+            wifi_stop_softap();
             display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_OFF);
             status_ = Q_HANDLED();
             break;

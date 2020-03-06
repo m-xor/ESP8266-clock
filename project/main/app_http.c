@@ -16,8 +16,10 @@
 #include "freertos/FreeRTOS.h"
 //#include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include <esp_http_server.h>
 #include "store_config.h"
 #include "buildstamp.h"
+#include "app_apsta.h"
 
 #define MAXDATE 30
 
@@ -72,15 +74,7 @@ enum dataSet {
 	DATASET_INVALID
 };
 
-extern EventGroupHandle_t wifi_event_group;
-//extern const int WIFI_CONNECTED_BIT;
-//extern const int WIFI_NOT_CONNECTED_BIT;
-extern const int WIFI_SCAN_DONE;
-
-extern TimerHandle_t xHttpdExpire;
-
 static const char *TAG = "HTTPD";
-
 
 /* find particular header in request */
 /* remember to free pointer after use */
@@ -345,7 +339,7 @@ static esp_err_t json_set_handler(httpd_req_t *req)
 	case DATASET_CLOSE :
 		req_status = HTTPD_408;
 		//let timer some time for complete request
-		xTimerChangePeriod(xHttpdExpire,pdMS_TO_TICKS(1000), pdMS_TO_TICKS(50));
+		xTimerChangePeriod(xHttpdExpire,pdMS_TO_TICKS(1500), pdMS_TO_TICKS(500));
 		break;
 	default:
 		setItem(root, "Info", "msg", "Error at parsing SET/DataSet header");
@@ -424,15 +418,20 @@ httpd_uri_t clock_set_json = {
 };
 
 
-httpd_handle_t start_webserver(void)
+static httpd_handle_t server = NULL;
+
+int start_webserver(void)
 {
-    httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+
+    if(server!=NULL)	//already running
+    	return 0;
 
     // Start the httpd server
     ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
     if (httpd_start(&server, &config) == ESP_OK) {
-        // Set URI handlers
+
+    	// Set URI handlers
         ESP_LOGI(TAG, "Registering URI handlers");
 
         httpd_register_uri_handler(server, &index_page);
@@ -442,15 +441,21 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &clock_get_json);
         httpd_register_uri_handler(server, &clock_set_json);
 
-        return server;
+        return 0; /* OK */
     }
 
     ESP_LOGI(TAG, "Error starting server!");
-    return NULL;
+
+    return -1;
 }
 
-void stop_webserver(httpd_handle_t server)
+
+void stop_webserver(void)
 {
+	if(server==NULL) //already stopped
+		return;
+
     // Stop the httpd server
     httpd_stop(server);
+    server = NULL;
 }

@@ -38,9 +38,9 @@
     </state>
     <state name="configuration">
      <documentation>/* Clock configuration phase: httpd is active, wifi in AP+STA  mode */</documentation>
-     <entry>start_apsta();
+     <entry>wifi_init_softap();
 display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_ON);</entry>
-     <exit>stop_apsta();
+     <exit>wifi_stop_softap();
 display_led(DISPLAY_HTTP_ACTIVE, DISPLAY_LED_OFF);</exit>
      <tran trig="TIMEOUT" target="../../1">
       <tran_glyph conn="28,26,3,1,-9">
