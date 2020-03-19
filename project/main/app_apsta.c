@@ -43,6 +43,7 @@ void wifi_init_softap(void)
     cfg.nvs_enable = 0;
     ESP_ERROR_CHECK( (err = esp_wifi_init(&cfg)) );
     Q_ASSERT(!err);
+	ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
 
     wifi_config_t wifi_config = {
         .ap = {
